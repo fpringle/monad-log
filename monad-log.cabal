@@ -42,15 +42,15 @@ library
   -- other-modules:       
   -- other-extensions:    
   build-depends:        base >=4.6 && <5
-                    ,   fast-logger >=2.4.5 && <2.5
+                    ,   fast-logger 
                     ,   monad-control >=0.3 && <1.1
                     ,   lifted-base 
-                    ,   exceptions >=0.6 && <0.9
+                    ,   exceptions 
                     ,   bytestring
                     ,   text
                     ,   text-show
                     ,   transformers >=0.2
-                    ,   aeson        >= 0.4 && <0.12
+                    ,   aeson        
                     ,   template-haskell 
 
   -- hs-source-dirs:      
