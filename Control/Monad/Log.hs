@@ -288,17 +288,17 @@ localEnv f = localLogger $ \ lgr -> lgr { environment = f (environment lgr) }
 -- a special reader monad which embed a 'Logger'.
 newtype LogT env m a = LogT { runLogT :: Logger env -> m a }
 
-instance Monad m => Functor (LogT env m) where
+instance (Monad m, Fail.MonadFail m) => Functor (LogT env m) where
     fmap = liftM
     {-# INLINE fmap #-}
 
-instance Monad m => Applicative (LogT env m) where
+instance (Monad m, Fail.MonadFail m) => Applicative (LogT env m) where
     pure = return
     {-# INLINE pure #-}
     (<*>) = ap
     {-# INLINE (<*>) #-}
 
-instance Monad m => Monad (LogT env m) where
+instance (Monad m, Fail.MonadFail m) => Monad (LogT env m) where
     return = LogT . const . return
     {-# INLINE return #-}
     LogT ma >>= f = LogT $ \lgr -> do
@@ -306,8 +306,8 @@ instance Monad m => Monad (LogT env m) where
         let LogT f' = f a
         f' lgr
     {-# INLINE (>>=) #-}
-    fail msg = lift (fail msg)
-    {-# INLINE fail #-}
+    -- fail msg = lift (Fail.fail msg)
+    -- {-# INLINE fail #-}
 
 #if MIN_VERSION_base(4,9,0)
 instance Fail.MonadFail m => Fail.MonadFail (LogT env m) where
@@ -315,7 +315,7 @@ instance Fail.MonadFail m => Fail.MonadFail (LogT env m) where
     {-# INLINE fail #-}
 #endif
 
-instance (MonadFix m) => MonadFix (LogT r m) where
+instance (MonadFix m, Fail.MonadFail m) => MonadFix (LogT r m) where
     mfix f = LogT $ \ r -> mfix $ \ a -> runLogT (f a) r
     {-# INLINE mfix #-}
 
@@ -323,11 +323,11 @@ instance MonadTrans (LogT env) where
     lift = LogT . const
     {-# INLINE lift #-}
 
-instance MonadIO m => MonadIO (LogT env m) where
+instance (MonadIO m, Fail.MonadFail m) => MonadIO (LogT env m) where
     liftIO = lift . liftIO
     {-# INLINE liftIO #-}
 
-instance MonadIO m => MonadLog env (LogT env m) where
+instance (MonadIO m, Fail.MonadFail m) => MonadLog env (LogT env m) where
     askLogger = LogT return
     {-# INLINE askLogger #-}
     localLogger f ma = LogT $ \ r -> runLogT ma (f r)
