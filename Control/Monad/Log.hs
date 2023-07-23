@@ -74,7 +74,7 @@ import Data.Monoid (Monoid)
 import qualified Control.Monad.Fail as Fail
 #endif
 import Control.Monad (when, liftM, ap)
-import Control.Monad.Catch (MonadMask, finally)
+import Control.Monad.Catch (MonadMask, MonadThrow (..), finally)
 import Control.Monad.Trans.Control (MonadBaseControl)
 import qualified Control.Exception.Lifted as Lifted
 
@@ -314,6 +314,9 @@ instance Fail.MonadFail m => Fail.MonadFail (LogT env m) where
     fail msg = lift (Fail.fail msg)
     {-# INLINE fail #-}
 #endif
+
+instance (MonadThrow m, Fail.MonadFail m) => MonadThrow (LogT env m) where
+    throwM err = lift (throwM err)
 
 instance (MonadFix m, Fail.MonadFail m) => MonadFix (LogT r m) where
     mfix f = LogT $ \ r -> mfix $ \ a -> runLogT (f a) r
